@@ -7,10 +7,16 @@ import matplotlib.pyplot as plt
 
 temperature = 35  # temperature threshold for hd35
 scenarios = ["rcp26", "rcp45", "rcp85"]
-thresholds = ["q90"] #["q70", "q80", "q90"]
-epochs = [2030, 2050, 2080]
+thresholds = ["q80"] #["q70", "q80", "q90"]
+epochs = {
+    "historical": [2010],
+    "rcp26": [2030, 2050, 2080],
+    "rcp45": [2030, 2050, 2080],
+    "rcp85": [2030, 2050, 2080]
+}
 rps = [5, 10, 20, 50, 100, 200, 500, 1000]
 wd = f"../data/hazard/hd{temperature}/ensemble"
+shared_models = ['MOHC-HadGEM2-ES_KNMI-RACMO22T', 'MPI-M-MPI-ESM-LR_MPI-CSC-REMO2009']
 outdir = f"../data/hazard/hd{temperature}/tifs"
 
 # delete and recreate output dir
@@ -25,7 +31,7 @@ for scenario in scenarios:
     template_ds = None
     for threshold in thresholds:
         indir = os.path.join(wd, threshold, scenario)
-        models = os.listdir(indir)
+        models = shared_models #os.listdir(indir)
         print(f"{models=}")
         for model in models:
             filepath = os.path.join(indir, model, "return_levels.nc")
@@ -50,7 +56,7 @@ for scenario in scenarios:
         haz_min = combined.min(dim="model", skipna=True)
         haz_max = combined.max(dim="model", skipna=True)
 
-    for epoch in epochs:
+    for epoch in epochs[scenario]:
         for rp in rps:
             haz_mean = combined.sel(epoch=epoch, return_period=rp).mean(dim="model", skipna=True)
             haz_min = combined.sel(epoch=epoch, return_period=rp).min(dim="model", skipna=True)

@@ -15,7 +15,6 @@ RES = "44"
 LAT = "rlat"
 LON = "rlon"
 TIME = "time"
-THRESH = 39.0
 BBOX = [29, 41, -12, -1]
 
 OUTPUT = ["hd35", "tasmax"][1]

@@ -20,13 +20,15 @@ from stats import dgpd
 
 
 input_dir = f"../data/yearly/hd35"
-epochs = [2080, 2050, 2030]
-scenarios = ["rcp85", "rcp45", "rcp26"]
+
+q_threshold = 80
+dry_run = False
 rps = [5, 10, 20, 50, 100, 200, 500, 1000]
 ignore = ["DS_Store"]
-q_threshold = 90
-dry_run = False
 
+i = 1
+epochs = [[2080, 2050, 2030], [2000, 2005, 2010]][i]
+scenarios = [["rcp85", "rcp45", "rcp26"], ["historical"]][i]
 
 if __name__ == "__main__":
     logging.basicConfig(filename='../logs/detrended.log', level=logging.INFO,
@@ -45,6 +47,7 @@ if __name__ == "__main__":
         for model in models:
             model_dir = os.path.join(scenario_dir, model)
             files = glob(f"{model_dir}/*.nc")
+
             if len(files) == 0:
                 logging.warning(f"No files found for model {model}, scenario {scenario}")
                 continue
@@ -75,12 +78,15 @@ if __name__ == "__main__":
 
             pixel_count = 0  # Renamed from 'i' to avoid confusion
 
-
             for lat in tqdm(range(h)):
                 for lon in range(w):
 
                     data = x[:, lat, lon]
                     if (data == -9999).all() or np.isnan(data).all():
+                        continue
+
+                    if data.max() == 0:
+                        logging.warning(f"All data zero at lat {lat}, lon {lon}, skipping.")
                         continue
                     pixel_count += 1
 
@@ -191,11 +197,12 @@ if __name__ == "__main__":
             vmin = return_levels_da.min().item()
             vmax = return_levels_da.max().item()
 
-            return_levels_da.sel(epoch=2080, return_period=10).plot(cmap="YlOrRd", ax=axs[0], 
+            epoch = epochs[-1]
+            return_levels_da.sel(epoch=epoch, return_period=10).plot(cmap="YlOrRd", ax=axs[0], 
                                                         vmin=vmin, vmax=vmax)
-            return_levels_da.sel(epoch=2080, return_period=100).plot(cmap="YlOrRd", ax=axs[1], 
+            return_levels_da.sel(epoch=epoch, return_period=100).plot(cmap="YlOrRd", ax=axs[1], 
                                                         vmin=vmin, vmax=vmax)
-            return_levels_da.sel(epoch=2080, return_period=1000).plot(cmap="YlOrRd", ax=axs[2], 
+            return_levels_da.sel(epoch=epoch, return_period=1000).plot(cmap="YlOrRd", ax=axs[2], 
                                                         vmin=vmin, vmax=vmax)
 
             for ax in axs:

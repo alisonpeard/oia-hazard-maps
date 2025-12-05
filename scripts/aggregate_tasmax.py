@@ -5,16 +5,22 @@ import rioxarray
 import matplotlib.pyplot as plt
 
 
-scenarios = ["rcp26", "rcp45", "rcp85"]
-epochs = [2030, 2050, 2080]
+scenarios = ["historical", "rcp26", "rcp45", "rcp85"]
+epochs = {
+    "historical": [2010],
+    "rcp26": [2030, 2050, 2080],
+    "rcp45": [2030, 2050, 2080],
+    "rcp85": [2030, 2050, 2080]
+}
 rps = [5, 10, 20, 50, 100, 200, 500, 1000]
 wd = f"../data/hazard/tasmax/ensemble"
 outdir = f"../data/hazard/tasmax/tifs"
+shared_models = ['MOHC-HadGEM2-ES_KNMI-RACMO22T', 'MPI-M-MPI-ESM-LR_MPI-CSC-REMO2009']
 
-# delete and recreate output dir
+# %% delete and recreate output dir
 if os.path.exists(outdir):
     import shutil
-    shutil.rmtree(outdir)
+    shutil.rmtree(outdir,  ignore_errors=True)
 os.makedirs(outdir, exist_ok=True)
 plot = True
 
@@ -22,7 +28,7 @@ for scenario in scenarios:
     template_ds = None
 
     indir = os.path.join(wd, scenario)
-    models = os.listdir(indir)
+    models = shared_models # os.listdir(indir)
     print(f"{models=}")
 
     hazard_maps = []
@@ -49,7 +55,7 @@ for scenario in scenarios:
         haz_min = combined.min(dim="model", skipna=True)
         haz_max = combined.max(dim="model", skipna=True)
 
-    for epoch in epochs:
+    for epoch in epochs[scenario]:
         for rp in rps:
             haz_mean = combined.sel(epoch=epoch, return_period=rp).mean(dim="model", skipna=True)
             haz_min = combined.sel(epoch=epoch, return_period=rp).min(dim="model", skipna=True)
@@ -81,7 +87,7 @@ print("Finished exporting hazard maps to GeoTIFFs.")
 # load and plot one of the generated files
 import rioxarray
 
-sample_file = os.path.join(outdir, "tasmax_2030_rcp26_rp00005.tif")
+sample_file = os.path.join(outdir, "tasmax_2010_historical_rp00005.tif")
 if os.path.exists(sample_file):
     min_file = sample_file.replace("tasmax_", "tasmaxmin_")
     max_file = sample_file.replace("tasmax_", "tasmaxmax_")

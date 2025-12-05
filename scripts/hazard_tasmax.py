@@ -20,10 +20,12 @@ import matplotlib.pyplot as plt
 
 
 input_dir = f"../data/yearly/tasmax"
-scenarios = ["rcp85", "rcp45", "rcp26"]
 rps = [5, 10, 20, 50, 100, 200, 500, 1000]
-epochs = [2080, 2050, 2030]
 ignore = ["DS_Store"]
+
+i = 1
+epochs = [[2080, 2050, 2030], [2000, 2005, 2010]][i]
+scenarios = [["rcp85", "rcp45", "rcp26"], ["historical"]][i]
 
 
 def plot_gev_fit(x, shape, loc, scale):
@@ -179,11 +181,13 @@ if __name__ == "__main__":
             vmin = return_levels_da.min().item()
             vmax = return_levels_da.max().item()
 
-            return_levels_da.sel(epoch=2030, return_period=10).plot(cmap="YlOrRd", ax=axs[0], 
+            epoch = epochs[-1]
+
+            return_levels_da.sel(epoch=epoch, return_period=10).plot(cmap="YlOrRd", ax=axs[0], 
                                                         vmin=vmin, vmax=vmax)
-            return_levels_da.sel(epoch=2030, return_period=100).plot(cmap="YlOrRd", ax=axs[1], 
+            return_levels_da.sel(epoch=epoch, return_period=100).plot(cmap="YlOrRd", ax=axs[1], 
                                                         vmin=vmin, vmax=vmax)
-            return_levels_da.sel(epoch=2030, return_period=1000).plot(cmap="YlOrRd", ax=axs[2], 
+            return_levels_da.sel(epoch=epoch, return_period=1000).plot(cmap="YlOrRd", ax=axs[2], 
                                                         vmin=vmin, vmax=vmax)
 
             for ax in axs:
